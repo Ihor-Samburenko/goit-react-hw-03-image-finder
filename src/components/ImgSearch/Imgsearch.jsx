@@ -19,7 +19,7 @@ class ImgSearch extends Component {
     showModal: false,
     bigImage: '',
     tag: '',
-    totaHits: 0,
+    totalHits: 0,
   };
 
   componentDidUpdate(_, prevState) {
@@ -30,16 +30,21 @@ class ImgSearch extends Component {
   }
 
   updateSaerch = ({ search }) => {
+    if (search === this.state.search) {
+      return;
+    }
     this.setState({ search, images: [], page: 1 });
   };
   async fetchPosts() {
     const { search, page } = this.state;
     try {
       this.setState({ loading: true });
+
       const { data } = await searchPost(search, page);
+      console.log(data);
       this.setState(({ images }) => ({
         images: [...images, ...data.hits],
-        totaHits: data.totaHits,
+        totalHits: data.totalHits,
       }));
     } catch (error) {
       console.log(error);
@@ -72,8 +77,16 @@ class ImgSearch extends Component {
   };
 
   render() {
-    const { images, loading, error, showModal, tag, bigImage, search } =
-      this.state;
+    const {
+      images,
+      loading,
+      error,
+      showModal,
+      tag,
+      bigImage,
+      search,
+      totalHits,
+    } = this.state;
 
     return (
       <>
@@ -90,7 +103,7 @@ class ImgSearch extends Component {
           <p className={css.p}>Not found</p>
         )}
         <ImageGallery images={images} showModal={this.showModal} />
-        {images.length > 0 && images.length % 12 !== 0 && (
+        {images.length > 0 && images.length !== totalHits && (
           <Button loadMore={this.loadMore} />
         )}
       </>
