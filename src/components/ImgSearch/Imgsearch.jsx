@@ -7,6 +7,8 @@ import Button from 'components/Button/Button';
 import Modal from 'components/Modal/Modal';
 import Loader from 'components/Loader/Loader';
 
+import css from '../ImgSearch/img.module.css';
+
 class ImgSearch extends Component {
   state = {
     page: 1,
@@ -17,6 +19,7 @@ class ImgSearch extends Component {
     showModal: false,
     bigImage: '',
     tag: '',
+    totaHits: 0,
   };
 
   componentDidUpdate(_, prevState) {
@@ -29,16 +32,14 @@ class ImgSearch extends Component {
   updateSaerch = ({ search }) => {
     this.setState({ search, images: [], page: 1 });
   };
-
   async fetchPosts() {
     const { search, page } = this.state;
     try {
       this.setState({ loading: true });
-      const {
-        data: { hits },
-      } = await searchPost(search, page);
+      const { data } = await searchPost(search, page);
       this.setState(({ images }) => ({
-        images: [...images, ...hits],
+        images: [...images, ...data.hits],
+        totaHits: data.totaHits,
       }));
     } catch (error) {
       console.log(error);
@@ -71,16 +72,8 @@ class ImgSearch extends Component {
   };
 
   render() {
-    const {
-      images,
-      loading,
-      error,
-      showModal,
-      tag,
-      bigImage,
-
-      search,
-    } = this.state;
+    const { images, loading, error, showModal, tag, bigImage, search } =
+      this.state;
 
     return (
       <>
@@ -93,9 +86,13 @@ class ImgSearch extends Component {
         <Searchbar onSubmit={this.updateSaerch} />
         {loading && <Loader />}
         {error && <p>{error}</p>}
-        {search !== '' && images.length === 0 && !loading && <p>Not found</p>}
+        {search !== '' && images.length === 0 && !loading && !error && (
+          <p className={css.p}>Not found</p>
+        )}
         <ImageGallery images={images} showModal={this.showModal} />
-        {Boolean(images.length) && <Button loadMore={this.loadMore} />}
+        {images.length > 0 && images.length % 12 !== 0 && (
+          <Button loadMore={this.loadMore} />
+        )}
       </>
     );
   }
